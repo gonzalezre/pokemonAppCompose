@@ -1,6 +1,7 @@
 package com.example.pokemonapp
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -22,17 +23,22 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            PokemonAppTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize().padding(0.dp),
-                    color = MaterialTheme.colorScheme.background,
+        try {
+            setContent {
+                PokemonAppTheme {
+                    // A surface container using the 'background' color from the theme
+                    Surface(
+                        modifier = Modifier.fillMaxSize().padding(0.dp),
+                        color = MaterialTheme.colorScheme.background,
 
-                ) {
-                    PokemonsScreen(pokemonsViewModel)
+                        ) {
+                        PokemonsScreen(pokemonsViewModel)
+                    }
                 }
             }
+        }
+        catch (e : Exception){
+            Log.e("MainActivity", e.toString())
         }
     }
 }

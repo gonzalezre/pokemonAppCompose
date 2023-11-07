@@ -1,6 +1,5 @@
 package com.example.pokemonapp.listPokemons.ui
 
-import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -11,16 +10,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -41,90 +38,95 @@ import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.example.pokemonapp.R
 import com.example.pokemonapp.listPokemons.data.model.PokemonModel
+import java.util.Locale
 
 
 @Composable
 fun PokemonsScreen(pokemonsViewModel: PokemonsViewModel) {
-    val pokemonsList : List<PokemonModel> by pokemonsViewModel.pokemons.observeAsState(initial = emptyList())
-    val isLoading: Boolean by pokemonsViewModel.isLoading.observeAsState(initial = false)
-    LaunchedEffect(Unit) {
-        pokemonsViewModel.onGettingPokemons()
-    }
-
-    if (isLoading){
-        Box(
-            Modifier
-                .fillMaxSize()
-        ) {
-            CircularProgressIndicator(Modifier.align(Alignment.Center))
+        val pokemonsList: List<PokemonModel> by pokemonsViewModel.pokemons.observeAsState(initial = emptyList())
+        val isLoading: Boolean by pokemonsViewModel.isLoading.observeAsState(initial = false)
+        LaunchedEffect(Unit) {
+            pokemonsViewModel.onGettingPokemons()
         }
-    }
-    else {
 
-        Box (modifier = Modifier.fillMaxSize()){
 
-            Image(
-                painter = painterResource(id = R.drawable.pokebola),
-                contentDescription = "pokebola",
+        if (isLoading) {
+            Box(
                 Modifier
-                    .width(200.dp)
-                    .height(200.dp)
-                    .alpha(0.6f)
-                    .align(Alignment.TopEnd)
-                    .offset(x = (30).dp)
-            )
+                    .fillMaxSize()
+            ) {
+                CircularProgressIndicator(Modifier.align(Alignment.Center))
+            }
+        } else {
 
-            Column(modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 30.dp, start = 8.dp)) {
-                //header()
-                LazyVerticalGrid(
-                    columns = GridCells.Adaptive(200.dp),
-                    content = {
+            Box(modifier = Modifier.fillMaxSize()) {
 
-                        itemsIndexed(items = pokemonsList,
-                            key = { _: Int, item: PokemonModel ->
-                                item.id
-                            },
-                            span = { _: Int, item: PokemonModel ->
-
-                                if (item.id == 0){
-                                    GridItemSpan(2)
-                                }
-                                else{
-                                    GridItemSpan(1)
-                                }
-
-
-                            }
-                        )
-                        { index, pokemon ->
-
-                            if (pokemon.id == 0){
-                                header()
-                            }
-
-                            PokemonItem2(pokemon = pokemon)
-
-
-                        }
-                    }
+                Image(
+                    painter = painterResource(id = R.drawable.pokebola),
+                    contentDescription = "pokebola",
+                    Modifier
+                        .width(200.dp)
+                        .height(200.dp)
+                        .alpha(0.6f)
+                        .align(Alignment.TopEnd)
+                        .offset(x = (30).dp)
                 )
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
+                    //header()
+                    LazyVerticalGrid(
+                        columns = GridCells.Adaptive(150.dp),
+                        content = {
+                            itemsIndexed(items = pokemonsList,
+                                key = { _: Int, item: PokemonModel ->
+                                    item.id
+                                },
+                                span = { _: Int, item: PokemonModel ->
+
+                                    if (item.id == 0) {
+                                        GridItemSpan(2)
+                                    } else {
+                                        GridItemSpan(1)
+                                    }
+
+
+                                }
+                            )
+                            { index, pokemon ->
+
+                                if (pokemon.id == 0) {
+                                    header()
+                                } else {
+                                    PokemonItem(pokemon = pokemon)
+                                }
+
+                            }
+                        }
+                    )
+                }
             }
         }
-    }
 
 }
 
 
 @Composable
 fun header() {
-    Text(text = "Pokedex", color = Color.Black , fontWeight = FontWeight.Bold , fontSize = 40.sp)
+    Text(
+        text = "Pokedex",
+        color = Color.Black ,
+        fontWeight = FontWeight.Bold ,
+        fontSize = 40.sp,
+        modifier = Modifier.padding(start = 10.dp)
+    )
 }
 
 
 @Composable
-fun PokemonItem(pokemon : PokemonModel) {
+fun PokemonItem2(pokemon : PokemonModel) {
     Card(
 
         modifier = Modifier
@@ -162,30 +164,52 @@ fun PokemonItem(pokemon : PokemonModel) {
 }
 
 @Composable
-fun PokemonItem2(pokemon : PokemonModel) {
-        Box(modifier =
+fun PokemonItem(pokemon : PokemonModel) {
+
+    Box(modifier =
         Modifier
             .fillMaxSize()
-            .padding(8.dp)
-            .zIndex(1f)
-            .graphicsLayer(
-                translationX = 30f, // Adjust the translation for the X-axis
-                translationY = 30f  // Adjust the translation for the Y-axis
-            )) {
+            .padding(4.dp)
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .width(200.dp)
+                    .height(200.dp)
+                    .padding(8.dp, 8.dp),
+                elevation = CardDefaults.cardElevation(12.dp),
+
+
+            ) {
+                Column (
+                    modifier = Modifier.fillMaxSize().padding(0.dp).background(color = pokemon.color!!),
+                    //modifier = Modifier.fillMaxSize().padding(0.dp).background(color = Color.Black),
+
+                ){
+                    val capitalizedText = pokemon.name.replaceFirstChar {
+                        if (it.isLowerCase()) it.titlecase(
+                            Locale.ROOT
+                        ) else it.toString()
+                    }
+                    Text(text = "#${pokemon.id.toString()}", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray, modifier = Modifier.padding(top = 4.dp, start = 4.dp))
+                    Text(text = capitalizedText, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray, modifier = Modifier.padding(start = 4.dp))
+                }
+            }
             AsyncImage(
                 model = pokemon.picture ,
                 contentDescription = pokemon.name ,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Red)
-                    .zIndex(1f)
-                    .offset(x = 30.dp, y = 30.dp),
+                    .fillMaxSize(0.9f)
+                    .offset(x = 35.dp, y = 35.dp)
+                    .padding(4.dp),
                 contentScale = ContentScale.Crop,
+                onSuccess = { success ->
+                    //drawable = success.result.drawable
+                }
             )
-            Text(text = pokemon.id.toString())
-            Text(text = pokemon.name)
         }
 }
+
 
 @Preview(showBackground = true)
 @Composable

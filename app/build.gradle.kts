@@ -86,5 +86,9 @@ dependencies {
 
     //Coil
     implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation("io.coil-kt:coil:1.3.2")
+
+    //Palette
+    implementation("androidx.palette:palette:1.0.0")
 
 }

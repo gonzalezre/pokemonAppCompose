@@ -20,6 +20,7 @@ class NetworkModule {
             .baseUrl("https://pokeapi.co/api/v2/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
+
     }
 
     @Singleton
