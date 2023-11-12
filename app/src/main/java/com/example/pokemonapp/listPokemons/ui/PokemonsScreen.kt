@@ -3,8 +3,10 @@ package com.example.pokemonapp.listPokemons.ui
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,6 +17,9 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -30,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -45,6 +51,8 @@ import java.util.Locale
 fun PokemonsScreen(pokemonsViewModel: PokemonsViewModel) {
         val pokemonsList: List<PokemonModel> by pokemonsViewModel.pokemons.observeAsState(initial = emptyList())
         val isLoading: Boolean by pokemonsViewModel.isLoading.observeAsState(initial = false)
+        val isErrorConnection: Boolean by pokemonsViewModel.isErrorConnection.observeAsState(initial = false)
+        val lazyListState = rememberLazyGridState()
         LaunchedEffect(Unit) {
             pokemonsViewModel.onGettingPokemons()
         }
@@ -57,7 +65,11 @@ fun PokemonsScreen(pokemonsViewModel: PokemonsViewModel) {
             ) {
                 CircularProgressIndicator(Modifier.align(Alignment.Center))
             }
-        } else {
+        }
+        else if (isErrorConnection){
+            NetworkErrorComposable { pokemonsViewModel.onGettingPokemons() }
+        }
+        else {
 
             Box(modifier = Modifier.fillMaxSize()) {
 
@@ -78,6 +90,7 @@ fun PokemonsScreen(pokemonsViewModel: PokemonsViewModel) {
                 ) {
                     //header()
                     LazyVerticalGrid(
+                        state = lazyListState,
                         columns = GridCells.Adaptive(150.dp),
                         content = {
                             itemsIndexed(items = pokemonsList,
@@ -101,6 +114,12 @@ fun PokemonsScreen(pokemonsViewModel: PokemonsViewModel) {
                                     header()
                                 } else {
                                     PokemonItem(pokemon = pokemon)
+                                }
+
+                                // Load more data when reaching the last item
+                                if (index == pokemonsList.size - 1) {
+                                    // Load more data here, e.g., call a function to fetch the next page
+                                    pokemonsViewModel.onGettingPokemons()
                                 }
 
                             }
@@ -167,9 +186,9 @@ fun PokemonItem2(pokemon : PokemonModel) {
 fun PokemonItem(pokemon : PokemonModel) {
 
     Box(modifier =
-        Modifier
-            .fillMaxSize()
-            .padding(4.dp)
+    Modifier
+        .fillMaxSize()
+        .padding(4.dp)
         ) {
             Card(
                 modifier = Modifier
@@ -182,7 +201,10 @@ fun PokemonItem(pokemon : PokemonModel) {
 
             ) {
                 Column (
-                    modifier = Modifier.fillMaxSize().padding(0.dp).background(color = pokemon.color!!),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(0.dp)
+                        .background(color = pokemon.color!!),
                     //modifier = Modifier.fillMaxSize().padding(0.dp).background(color = Color.Black),
 
                 ){
@@ -211,7 +233,7 @@ fun PokemonItem(pokemon : PokemonModel) {
 }
 
 
-@Preview(showBackground = true)
+
 @Composable
 fun PokemonItem() {
     Card(
@@ -226,6 +248,38 @@ fun PokemonItem() {
                 .height(100.dp), contentScale = ContentScale.Crop)
             Text(text = "#1", modifier = Modifier.align(Alignment.CenterHorizontally))
             Text(text = "pokemon.name", modifier = Modifier.align(Alignment.CenterHorizontally))
+        }
+    }
+}
+
+
+@Composable
+fun NetworkErrorComposable(onGettingPokemons: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Add your illustration (e.g., an image or icon) here
+            Image(
+                painter = painterResource(id = R.drawable.networkerror),
+                contentDescription = "networkerror",
+                Modifier
+            )
+            Text("Network Error", style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold))
+            Spacer(modifier = Modifier.height(16.dp))
+            Text("Sorry, we couldn't load the data. Please check your internet connection and try again.")
+            Spacer(modifier = Modifier.height(32.dp))
+            Button(onClick = onGettingPokemons) {
+                Text("Retry")
+            }
         }
     }
 }

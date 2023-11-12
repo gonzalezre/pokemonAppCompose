@@ -3,6 +3,7 @@ package com.example.pokemonapp.listPokemons.data
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.LiveData
 import androidx.palette.graphics.Palette
 import com.example.pokemonapp.core.network.PokemonService
 import com.example.pokemonapp.listPokemons.data.model.PokemonModel
@@ -20,8 +21,8 @@ import javax.inject.Singleton
 class PokemonRepository @Inject constructor(private val api : PokemonService) {
     //val api = PokemonService()
 
-    suspend fun getPokemons() : List<PokemonModel>{
-        val response = api.getPokemons()
+    suspend fun getPokemons(limit: Int): List<PokemonModel>{
+        val response = api.getPokemons(limit)
         val model : List<PokemonModel> = response.map { response ->
 
             val urlParts = response.url.split('/')
@@ -30,6 +31,7 @@ class PokemonRepository @Inject constructor(private val api : PokemonService) {
 
             //val bitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream())
             val bitmap = loadImageBitmap(picture)
+
 
             val palette = Palette.from(bitmap!!).generate()
             val darkVibrantSwatch = palette.dominantSwatch
