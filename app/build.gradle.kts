@@ -91,4 +91,13 @@ dependencies {
     //Palette
     implementation("androidx.palette:palette:1.0.0")
 
+    //Navigation
+    implementation("androidx.navigation:navigation-compose:2.7.5")
+
+    //Icons
+    implementation("androidx.compose.material:material-icons-extended:1.5.4")
+
+    //Material
+    implementation("androidx.compose.material:material:1.5.4")
+
 }

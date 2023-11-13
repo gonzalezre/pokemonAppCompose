@@ -11,8 +11,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.pokemonapp.listPokemons.ui.PokemonsScreen
 import com.example.pokemonapp.listPokemons.ui.PokemonsViewModel
+import com.example.pokemonapp.searchPokemons.ui.SearchScreen
+import com.example.pokemonapp.ui.BottomNavigation
+import com.example.pokemonapp.ui.model.Routes
 import com.example.pokemonapp.ui.theme.PokemonAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -21,6 +29,7 @@ class MainActivity : ComponentActivity() {
 
     private val pokemonsViewModel : PokemonsViewModel by viewModels()
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         try {
@@ -28,11 +37,33 @@ class MainActivity : ComponentActivity() {
                 PokemonAppTheme {
                     // A surface container using the 'background' color from the theme
                     Surface(
-                        modifier = Modifier.fillMaxSize().padding(0.dp),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(0.dp),
                         color = MaterialTheme.colorScheme.background,
 
+
                         ) {
-                        PokemonsScreen(pokemonsViewModel)
+                        val navigationController = rememberNavController()
+                            androidx.compose.material.Scaffold(
+                                bottomBar = { BottomNavigation(navigationController) }
+                            ) { it
+
+                                NavHost(navController = navigationController, startDestination = Routes.PokemonsScreen.route){
+                                    composable(Routes.PokemonsScreen.route){ PokemonsScreen(pokemonsViewModel, navigationController)}
+                                    composable(Routes.DetailScreen.route, arguments = listOf(navArgument("id") {type = NavType.IntType})) { backStackEntry ->
+                                        //PokemonsScreen(pokemonsViewModel, navigationController, backStackEntry.arguments?.getInt("id")) ?: 0
+                                        //clickable{navController.navigate("pantalla4/12121"}
+                                        //clickable{navController.navigate(Routes.DetailScreen.createRoute(12121))}
+                                        //Screen(parametro : Int)
+                                    }
+                                    composable(Routes.SearchScreen.route) { SearchScreen() }
+                                }
+
+
+                            }
+
+
                     }
                 }
             }
