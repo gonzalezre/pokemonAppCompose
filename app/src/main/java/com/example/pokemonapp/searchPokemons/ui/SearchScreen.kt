@@ -127,7 +127,7 @@ fun SearchScreen(searchViewModel: SearchViewModel, navigationController: NavHost
                         if (pokemon.id == 0) {
                             header(searchText)
                         } else {
-                            PokemonItem(pokemon = pokemon)
+                            PokemonItem(pokemon = pokemon, navigationController)
                         }
 
                         // Load more data when reaching the last item

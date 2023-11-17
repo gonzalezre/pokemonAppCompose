@@ -3,6 +3,7 @@ package com.example.pokemonapp.listPokemons.ui
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +23,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -46,6 +48,7 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.pokemonapp.R
 import com.example.pokemonapp.listPokemons.data.model.PokemonModel
+import com.example.pokemonapp.ui.model.Routes
 import java.util.Locale
 
 
@@ -118,7 +121,7 @@ fun PokemonsScreen(pokemonsViewModel: PokemonsViewModel, navigationController: N
                                 if (pokemon.id == 0) {
                                     header("Pokedex")
                                 } else {
-                                    PokemonItem(pokemon = pokemon)
+                                    PokemonItem(pokemon = pokemon, navigationController)
                                 }
 
                                 // Load more data when reaching the last item
@@ -149,7 +152,7 @@ fun header(title: String) {
 }
 
 @Composable
-fun PokemonItem(pokemon : PokemonModel) {
+fun PokemonItem(pokemon : PokemonModel, navigationController : NavHostController) {
 
     Box(modifier =
     Modifier
@@ -161,9 +164,10 @@ fun PokemonItem(pokemon : PokemonModel) {
                     .fillMaxSize()
                     .width(200.dp)
                     .height(200.dp)
-                    .padding(8.dp, 8.dp),
+                    .padding(8.dp, 8.dp)
+                    .clickable { navigationController.navigate(Routes.DetailScreen.createRoute(pokemon.id)) },
                 elevation = CardDefaults.cardElevation(12.dp),
-
+                shape = MaterialTheme.shapes.small
 
             ) {
                 Column (

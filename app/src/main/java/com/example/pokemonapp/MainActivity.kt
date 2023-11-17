@@ -17,6 +17,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.pokemonapp.detailPokemon.ui.DetailScreen
+import com.example.pokemonapp.listPokemons.data.model.PokemonModel
 import com.example.pokemonapp.listPokemons.ui.PokemonsScreen
 import com.example.pokemonapp.listPokemons.ui.PokemonsViewModel
 import com.example.pokemonapp.searchPokemons.ui.SearchScreen
@@ -54,12 +56,14 @@ class MainActivity : ComponentActivity() {
 
                                 NavHost(navController = navigationController, startDestination = Routes.PokemonsScreen.route){
                                     composable(Routes.PokemonsScreen.route){ PokemonsScreen(pokemonsViewModel, navigationController)}
-                                    composable(Routes.DetailScreen.route, arguments = listOf(navArgument("id") {type = NavType.IntType})) {
-                                        //PokemonsScreen(pokemonsViewModel, navigationController, backStackEntry.arguments?.getInt("id")) ?: 0
-                                        //clickable{navController.navigate("pantalla4/12121"}
-                                        //clickable{navController.navigate(Routes.DetailScreen.createRoute(12121))}
-                                        //Screen(parametro : Int)
+                                    composable(Routes.DetailScreen.route, arguments = listOf(navArgument("id") { type = NavType.IntType})) { backStackEntry->
+                                        DetailScreen(navigationController, backStackEntry.arguments?.getInt("id")) ?: 0
                                     }
+//                                    composable(Routes.DetailScreen.route, arguments = listOf(navArgument("pokemon") {
+//                                        type = NavType.SerializableType(PokemonModel::class.java)
+//                                    })) { backStackEntry->
+//                                        DetailScreen(navigationController, backStackEntry.arguments?.getSerializable("pokemon") as PokemonModel?)
+//                                    }
                                     composable(Routes.SearchScreen.route) { SearchScreen(searchViewModel, navigationController) }
                                 }
 
