@@ -2,12 +2,19 @@ package com.example.pokemonapp.listPokemons.ui
 
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.util.Log
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.palette.graphics.Palette
+import coil.ImageLoader
+import coil.request.ImageRequest
+import coil.request.SuccessResult
 import com.example.pokemonapp.listPokemons.data.model.PokemonModel
 import com.example.pokemonapp.listPokemons.domain.GetPokemonsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,10 +35,10 @@ class PokemonsViewModel @Inject constructor(@ApplicationContext context: Context
     private val _isErrorConnection = MutableLiveData<Boolean>()
     val isErrorConnection : LiveData<Boolean> = _isErrorConnection
 
-    private val _limit = MutableLiveData<Int>(40)
+    private val _limit = MutableLiveData<Int>(20)
     val limit : LiveData<Int> = _limit
 
-    fun onGettingPokemons(){
+    fun onGettingPokemons(context: Context){
         viewModelScope.launch {
             try {
                 _isLoading.value = true
@@ -41,7 +48,15 @@ class PokemonsViewModel @Inject constructor(@ApplicationContext context: Context
                 if (result != null){
                     //load results
 
-                    _pokemons.value = result
+                    val updatedResult = result.map { it->
+                      val bitmap =  convertImageUrlToBitmap(it.picture, context)
+                      val palette = bitmap?.let { Palette.from(it).generate() }
+                      val darkVibrantSwatch = palette?.dominantSwatch
+                      it.copy(color = darkVibrantSwatch?.let { Color(it.rgb) } ?: Color.Transparent)
+                    }
+
+                    //_pokemons.value = result
+                    _pokemons.value = updatedResult
                     //_pokemons.value = (_pokemons.value ?: emptyList()) + result
                    // _pokemons.value = _pokemons.value?.plus(result)
 
@@ -50,7 +65,7 @@ class PokemonsViewModel @Inject constructor(@ApplicationContext context: Context
                 _isLoading.value = false
                 _isErrorConnection.value = false
 
-                _limit.value = limit.value!! + 40
+                _limit.value = limit.value!! + 20
 
             }
             catch (e: Exception){
@@ -59,6 +74,21 @@ class PokemonsViewModel @Inject constructor(@ApplicationContext context: Context
                 _isErrorConnection.value = true
             }
 
+        }
+    }
+
+    private suspend fun convertImageUrlToBitmap(imageUrl: String, context: Context) : Bitmap?{
+        val loader = ImageLoader(context = context)
+        val request = ImageRequest.Builder(context = context)
+            .data(imageUrl)
+            .allowHardware(false)
+            .build()
+        val imageResult = loader.execute(request = request)
+        return if (imageResult is SuccessResult){
+            (imageResult.drawable as BitmapDrawable).bitmap
+        }
+        else{
+            null
         }
     }
 }

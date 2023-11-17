@@ -26,13 +26,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -52,8 +55,11 @@ fun PokemonsScreen(pokemonsViewModel: PokemonsViewModel, navigationController: N
         val isLoading: Boolean by pokemonsViewModel.isLoading.observeAsState(initial = false)
         val isErrorConnection: Boolean by pokemonsViewModel.isErrorConnection.observeAsState(initial = false)
         val lazyListState = rememberLazyGridState()
+        val context = LocalContext.current
         LaunchedEffect(Unit) {
-            pokemonsViewModel.onGettingPokemons()
+            if (pokemonsList.isEmpty()) {
+                pokemonsViewModel.onGettingPokemons(context)
+            }
         }
 
 
@@ -66,7 +72,7 @@ fun PokemonsScreen(pokemonsViewModel: PokemonsViewModel, navigationController: N
             }
         }
         else if (isErrorConnection){
-            NetworkErrorComposable { pokemonsViewModel.onGettingPokemons() }
+            NetworkErrorComposable { pokemonsViewModel.onGettingPokemons(context) }
         }
         else {
 
@@ -110,7 +116,7 @@ fun PokemonsScreen(pokemonsViewModel: PokemonsViewModel, navigationController: N
                             { index, pokemon ->
 
                                 if (pokemon.id == 0) {
-                                    header()
+                                    header("Pokedex")
                                 } else {
                                     PokemonItem(pokemon = pokemon)
                                 }
@@ -118,7 +124,7 @@ fun PokemonsScreen(pokemonsViewModel: PokemonsViewModel, navigationController: N
                                 // Load more data when reaching the last item
                                 if (index == pokemonsList.size - 1) {
                                     // Load more data here, e.g., call a function to fetch the next page
-                                    pokemonsViewModel.onGettingPokemons()
+                                    pokemonsViewModel.onGettingPokemons(context)
                                 }
 
                             }
@@ -132,9 +138,9 @@ fun PokemonsScreen(pokemonsViewModel: PokemonsViewModel, navigationController: N
 
 
 @Composable
-fun header() {
+fun header(title: String) {
     Text(
-        text = "Pokedex",
+        text = title,
         color = Color.Black ,
         fontWeight = FontWeight.Bold ,
         fontSize = 40.sp,
@@ -164,7 +170,7 @@ fun PokemonItem(pokemon : PokemonModel) {
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(0.dp)
-                        .background(color = pokemon.color!!),
+                        .background(color = pokemon.color ?: Color.Black ),
                     //modifier = Modifier.fillMaxSize().padding(0.dp).background(color = Color.Black),
 
                 ){

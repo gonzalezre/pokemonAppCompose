@@ -19,13 +19,25 @@ fun BottomNavigation(navigationController: NavHostController) {
     var index by remember { mutableStateOf(0)}
 
     androidx.compose.material.BottomNavigation {
-        BottomNavigationItem(selected = index == 0, onClick = {  navigationController.navigate(Routes.PokemonsScreen.route)  }, icon = {
+        BottomNavigationItem(
+            selected = index == 0,
+            onClick = {
+                index = 0
+                navigationController.navigate(Routes.PokemonsScreen.route)
+                },
+            icon = {
             Icon(
                 imageVector = Icons.Default.Home,
                 contentDescription = "Home"
             ) 
         }, label = { Text(text = "Home")})
-        BottomNavigationItem(selected = index == 1, onClick = { navigationController.navigate(Routes.SearchScreen.route) }, icon = {
+        BottomNavigationItem(
+            selected = index == 1,
+            onClick = {
+                index = 1
+                navigationController.navigate(Routes.SearchScreen.route)
+            },
+            icon = {
             Icon(
                 imageVector = Icons.Default.Search,
                 contentDescription = "Search"
