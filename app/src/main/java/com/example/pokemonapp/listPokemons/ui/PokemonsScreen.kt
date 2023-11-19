@@ -44,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.ViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.pokemonapp.R
@@ -121,7 +122,7 @@ fun PokemonsScreen(pokemonsViewModel: PokemonsViewModel, navigationController: N
                                 if (pokemon.id == 0) {
                                     header("Pokedex")
                                 } else {
-                                    PokemonItem(pokemon = pokemon, navigationController)
+                                    PokemonItem(pokemon = pokemon,  navigationController, pokemonsViewModel)
                                 }
 
                                 // Load more data when reaching the last item
@@ -152,7 +153,7 @@ fun header(title: String) {
 }
 
 @Composable
-fun PokemonItem(pokemon : PokemonModel, navigationController : NavHostController) {
+fun PokemonItem(pokemon : PokemonModel, navigationController : NavHostController, viewModel : PokemonViewModel) {
 
     Box(modifier =
     Modifier
@@ -165,7 +166,10 @@ fun PokemonItem(pokemon : PokemonModel, navigationController : NavHostController
                     .width(200.dp)
                     .height(200.dp)
                     .padding(8.dp, 8.dp)
-                    .clickable { navigationController.navigate(Routes.DetailScreen.createRoute(pokemon.id)) },
+                    .clickable {
+                        viewModel.selectPokemon(pokemon)
+                        navigationController.navigate(Routes.DetailScreen.createRoute(pokemon.id))
+                               },
                 elevation = CardDefaults.cardElevation(12.dp),
                 shape = MaterialTheme.shapes.small
 
@@ -188,7 +192,7 @@ fun PokemonItem(pokemon : PokemonModel, navigationController : NavHostController
                 }
             }
             AsyncImage(
-                model = pokemon.picture ,
+                model = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png" ,
                 contentDescription = pokemon.name ,
                 modifier = Modifier
                     .fillMaxSize(0.9f)
@@ -256,7 +260,7 @@ fun PokemonItem2(pokemon : PokemonModel) {
                 translationY = 30f  // Adjust the translation for the Y-axis
             )) {
             AsyncImage(
-                model = pokemon.picture ,
+                model = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png" ,
                 contentDescription = pokemon.name ,
                 modifier = Modifier
                     .fillMaxSize()

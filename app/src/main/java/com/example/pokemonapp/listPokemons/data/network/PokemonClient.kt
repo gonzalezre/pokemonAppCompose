@@ -12,4 +12,7 @@ interface PokemonClient {
 
     @GET("pokemon")
     suspend fun getPokemons(@Query("limit") limit: Int): Response<PokemonsListResponse>
+
+    @GET("pokemonById")
+    suspend fun getPokemonById(@Query("id") id: Int) : Response<PokemonsListResponse>
 }

@@ -17,6 +17,13 @@ class PokemonService @Inject constructor(private val pokemonClient: PokemonClien
         }
     }
 
+//    suspend fun getPokemonById(id: Int) : List<PokemonsResponse>{
+//        return withContext(Dispatchers.IO){
+//            val response = pokemonClient.getPokemons(limit = limit)
+//            response.body()!!.results
+//        }
+//    }
+
     /*suspend fun getPokemons() : NetworkResult<List<PokemonsResponse>>{
         return try {
             withContext(Dispatchers.IO) {

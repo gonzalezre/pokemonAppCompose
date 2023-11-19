@@ -23,11 +23,14 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class PokemonsViewModel @Inject constructor(@ApplicationContext context: Context, private val getPokemonsUseCase : GetPokemonsUseCase): ViewModel() {
+class PokemonsViewModel @Inject constructor(@ApplicationContext context: Context, private val getPokemonsUseCase : GetPokemonsUseCase): ViewModel(), PokemonViewModel {
 
     //val getPokemonsUseCase = GetPokemonsUseCase()
     private val _pokemons = MutableLiveData<List<PokemonModel>>()
     val pokemons : LiveData<List<PokemonModel>> = _pokemons
+
+    private val _selectedPokemon = MutableLiveData<PokemonModel>()
+    val selectedPokemon : LiveData<PokemonModel> = _selectedPokemon
 
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading : LiveData<Boolean> = _isLoading
@@ -49,7 +52,7 @@ class PokemonsViewModel @Inject constructor(@ApplicationContext context: Context
                     //load results
 
                     val updatedResult = result.map { it->
-                      val bitmap =  convertImageUrlToBitmap(it.picture, context)
+                      val bitmap =  convertImageUrlToBitmap("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${it.id}.png", context)
                       val palette = bitmap?.let { Palette.from(it).generate() }
                       val darkVibrantSwatch = palette?.dominantSwatch
                       it.copy(color = darkVibrantSwatch?.let { Color(it.rgb) } ?: Color.Transparent)
@@ -77,6 +80,10 @@ class PokemonsViewModel @Inject constructor(@ApplicationContext context: Context
         }
     }
 
+    fun onSelectingPokemon(pokemon: PokemonModel) {
+        _selectedPokemon.value = pokemon
+    }
+
     private suspend fun convertImageUrlToBitmap(imageUrl: String, context: Context) : Bitmap?{
         val loader = ImageLoader(context = context)
         val request = ImageRequest.Builder(context = context)
@@ -90,5 +97,9 @@ class PokemonsViewModel @Inject constructor(@ApplicationContext context: Context
         else{
             null
         }
+    }
+
+    override fun selectPokemon(pokemon: PokemonModel) {
+        _selectedPokemon.value = pokemon
     }
 }

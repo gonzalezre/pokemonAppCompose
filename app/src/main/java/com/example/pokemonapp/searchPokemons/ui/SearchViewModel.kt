@@ -17,6 +17,7 @@ import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.example.pokemonapp.listPokemons.data.model.PokemonModel
 import com.example.pokemonapp.listPokemons.domain.GetPokemonsUseCase
+import com.example.pokemonapp.listPokemons.ui.PokemonViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -27,10 +28,13 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
-class SearchViewModel @Inject constructor(@ApplicationContext context: Context, private val getPokemonsUseCase : GetPokemonsUseCase) :  ViewModel(){
+class SearchViewModel @Inject constructor(@ApplicationContext context: Context, private val getPokemonsUseCase : GetPokemonsUseCase) :  ViewModel(), PokemonViewModel{
 
     private val _pokemons = MutableLiveData<List<PokemonModel>>()
     val pokemons : LiveData<List<PokemonModel>> = _pokemons
+
+    private val _selectedPokemon = MutableLiveData<PokemonModel>()
+    val selectedPokemon : LiveData<PokemonModel> = _selectedPokemon
 
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading : LiveData<Boolean> = _isLoading
@@ -100,7 +104,7 @@ class SearchViewModel @Inject constructor(@ApplicationContext context: Context, 
                             }
 
                             val updatedResult = filteredPokemons.map { it->
-                                val bitmap =  convertImageUrlToBitmap(it.picture, context)
+                                val bitmap =  convertImageUrlToBitmap("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${it.id}.png", context)
                                 val palette = bitmap?.let { Palette.from(it).generate() }
                                 val darkVibrantSwatch = palette?.dominantSwatch
                                 it.copy(color = darkVibrantSwatch?.let { Color(it.rgb) } ?: Color.Transparent)
@@ -131,5 +135,9 @@ class SearchViewModel @Inject constructor(@ApplicationContext context: Context, 
         else{
             null
         }
+    }
+
+    override fun selectPokemon(pokemon: PokemonModel) {
+        _selectedPokemon.value = pokemon
     }
 }
