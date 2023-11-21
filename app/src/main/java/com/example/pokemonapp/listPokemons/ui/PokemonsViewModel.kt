@@ -19,11 +19,13 @@ import com.example.pokemonapp.listPokemons.data.model.PokemonModel
 import com.example.pokemonapp.listPokemons.domain.GetPokemonsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class PokemonsViewModel @Inject constructor(@ApplicationContext context: Context, private val getPokemonsUseCase : GetPokemonsUseCase): ViewModel(), PokemonViewModel {
+class PokemonsViewModel @Inject constructor(@ApplicationContext context: Context, private val getPokemonsUseCase : GetPokemonsUseCase): ViewModel() {
 
     //val getPokemonsUseCase = GetPokemonsUseCase()
     private val _pokemons = MutableLiveData<List<PokemonModel>>()
@@ -40,6 +42,19 @@ class PokemonsViewModel @Inject constructor(@ApplicationContext context: Context
 
     private val _limit = MutableLiveData<Int>(20)
     val limit : LiveData<Int> = _limit
+
+    //search
+    private val _pokemonsSearch = MutableLiveData<List<PokemonModel>>()
+    val pokemonsSearch : LiveData<List<PokemonModel>> = _pokemonsSearch
+
+    private val _filteredPokemons = MutableLiveData<List<PokemonModel>>()
+    val filteredPokemons : LiveData<List<PokemonModel>> = _filteredPokemons
+
+    private val searchQuery = MutableStateFlow("")
+
+    init {
+        observeSearchQuery(context)
+    }
 
     fun onGettingPokemons(context: Context){
         viewModelScope.launch {
@@ -80,6 +95,59 @@ class PokemonsViewModel @Inject constructor(@ApplicationContext context: Context
         }
     }
 
+    fun onGettingSearchPokemons(){
+        viewModelScope.launch {
+            try {
+                _isLoading.value = true
+                val result = getPokemonsUseCase(1200)
+                if (result != null){
+                    _pokemonsSearch.value = result
+                }
+                _isLoading.value = false
+            }
+            catch (e: Exception){
+                Log.e("PokemonsViewModel", e.toString())
+                _isLoading.value = false
+                _isErrorConnection.value = true
+            }
+        }
+    }
+
+    fun onSearchQueryChanged(query: String) {
+        searchQuery.value = query
+    }
+
+    private fun observeSearchQuery(context: Context) {
+        viewModelScope.launch {
+            searchQuery.debounce(2000)
+                .collect { query ->
+                    // Perform the search logic here
+                    // Update filteredPokemons accordingly
+                    if (searchQuery.value != "") {
+                        _isLoading.value = true
+                        val filteredPokemons = _pokemonsSearch.value!!.filter {
+                            it.name.contains(query, ignoreCase = true)
+                        }
+
+                        val updatedResult = filteredPokemons.map { it->
+                            val bitmap =  convertImageUrlToBitmap("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${it.id}.png", context)
+                            val palette = bitmap?.let { Palette.from(it).generate() }
+                            val darkVibrantSwatch = palette?.dominantSwatch
+                            it.copy(color = darkVibrantSwatch?.let { Color(it.rgb) } ?: Color.Transparent)
+                        }
+
+
+                        //_filteredPokemons.value = filteredPokemons
+                        _filteredPokemons.value = updatedResult
+                        _isLoading.value = false
+                    }
+
+
+                }
+
+        }
+    }
+
     fun onSelectingPokemon(pokemon: PokemonModel) {
         _selectedPokemon.value = pokemon
     }
@@ -99,7 +167,4 @@ class PokemonsViewModel @Inject constructor(@ApplicationContext context: Context
         }
     }
 
-    override fun selectPokemon(pokemon: PokemonModel) {
-        _selectedPokemon.value = pokemon
-    }
 }

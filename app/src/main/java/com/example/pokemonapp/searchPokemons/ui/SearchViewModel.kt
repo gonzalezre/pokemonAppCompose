@@ -17,7 +17,6 @@ import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.example.pokemonapp.listPokemons.data.model.PokemonModel
 import com.example.pokemonapp.listPokemons.domain.GetPokemonsUseCase
-import com.example.pokemonapp.listPokemons.ui.PokemonViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +27,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
-class SearchViewModel @Inject constructor(@ApplicationContext context: Context, private val getPokemonsUseCase : GetPokemonsUseCase) :  ViewModel(), PokemonViewModel{
+class SearchViewModel @Inject constructor(@ApplicationContext context: Context, private val getPokemonsUseCase : GetPokemonsUseCase) :  ViewModel(){
 
     private val _pokemons = MutableLiveData<List<PokemonModel>>()
     val pokemons : LiveData<List<PokemonModel>> = _pokemons
@@ -135,9 +134,5 @@ class SearchViewModel @Inject constructor(@ApplicationContext context: Context, 
         else{
             null
         }
-    }
-
-    override fun selectPokemon(pokemon: PokemonModel) {
-        _selectedPokemon.value = pokemon
     }
 }

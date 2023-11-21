@@ -102,4 +102,8 @@ dependencies {
     //Material
     implementation("androidx.compose.material:material:1.5.4")
 
+    //Accompanist-insets
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.20.0")
+
+
 }

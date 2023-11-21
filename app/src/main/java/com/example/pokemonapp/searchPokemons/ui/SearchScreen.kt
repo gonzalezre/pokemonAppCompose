@@ -38,10 +38,11 @@ import androidx.navigation.NavHostController
 import com.example.pokemonapp.listPokemons.data.model.PokemonModel
 import com.example.pokemonapp.listPokemons.ui.NetworkErrorComposable
 import com.example.pokemonapp.listPokemons.ui.PokemonItem
+import com.example.pokemonapp.listPokemons.ui.PokemonsViewModel
 import com.example.pokemonapp.listPokemons.ui.header
 
 @Composable
-fun SearchScreen(searchViewModel: SearchViewModel, navigationController: NavHostController) {
+fun SearchScreen(searchViewModel: PokemonsViewModel, navigationController: NavHostController) {
     val pokemonsList: List<PokemonModel> by searchViewModel.filteredPokemons.observeAsState(initial = emptyList())
     val isLoading: Boolean by searchViewModel.isLoading.observeAsState(initial = false)
     val isErrorConnection: Boolean by searchViewModel.isErrorConnection.observeAsState(initial = false)
@@ -50,7 +51,7 @@ fun SearchScreen(searchViewModel: SearchViewModel, navigationController: NavHost
     var searchPokemon by remember { mutableStateOf<PokemonModel?>(null) }
     LaunchedEffect(Unit) {
         if (pokemonsList.isEmpty()) {
-            searchViewModel.onGettingPokemons()
+            searchViewModel.onGettingSearchPokemons()
         }
     }
 
@@ -63,7 +64,7 @@ fun SearchScreen(searchViewModel: SearchViewModel, navigationController: NavHost
         }
     }
     else if (isErrorConnection){
-        NetworkErrorComposable { searchViewModel.onGettingPokemons() }
+        NetworkErrorComposable { searchViewModel.onGettingSearchPokemons() }
     }
     else {
         Column(

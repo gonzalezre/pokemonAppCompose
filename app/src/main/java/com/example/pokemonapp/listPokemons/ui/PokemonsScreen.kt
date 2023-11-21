@@ -153,7 +153,7 @@ fun header(title: String) {
 }
 
 @Composable
-fun PokemonItem(pokemon : PokemonModel, navigationController : NavHostController, viewModel : PokemonViewModel) {
+fun PokemonItem(pokemon : PokemonModel, navigationController : NavHostController, pokemonViewModel : PokemonsViewModel) {
 
     Box(modifier =
     Modifier
@@ -167,7 +167,7 @@ fun PokemonItem(pokemon : PokemonModel, navigationController : NavHostController
                     .height(200.dp)
                     .padding(8.dp, 8.dp)
                     .clickable {
-                        viewModel.selectPokemon(pokemon)
+                        pokemonViewModel.onSelectingPokemon(pokemon)
                         navigationController.navigate(Routes.DetailScreen.createRoute(pokemon.id))
                                },
                 elevation = CardDefaults.cardElevation(12.dp),
