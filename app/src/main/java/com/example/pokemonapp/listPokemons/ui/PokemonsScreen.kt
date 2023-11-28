@@ -79,7 +79,6 @@ fun PokemonsScreen(pokemonsViewModel: PokemonsViewModel, navigationController: N
             NetworkErrorComposable { pokemonsViewModel.onGettingPokemons(context) }
         }
         else {
-
             Box(modifier = Modifier.fillMaxSize()) {
 
                 Image(

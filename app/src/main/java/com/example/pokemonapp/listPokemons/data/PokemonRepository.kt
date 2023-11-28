@@ -1,24 +1,9 @@
 package com.example.pokemonapp.listPokemons.data
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.drawable.BitmapDrawable
 import android.util.Log
-import androidx.compose.ui.graphics.Color
-import androidx.palette.graphics.Palette
-import coil.Coil
-import coil.ImageLoader
-import coil.request.ImageRequest
-import coil.request.SuccessResult
 import com.example.pokemonapp.core.network.PokemonService
+import com.example.pokemonapp.detailPokemon.data.model.FullPokemonModel
 import com.example.pokemonapp.listPokemons.data.model.PokemonModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.IOException
-import java.io.InputStream
-import java.net.HttpURLConnection
-import java.net.URL
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -69,45 +54,39 @@ class PokemonRepository @Inject constructor(private val api : PokemonService) {
     }
 
 
-    /*suspend fun getPokemonById(limit: Int): PokemonModel{
+    suspend fun getPokemonById(id: Int): FullPokemonModel{
+        lateinit var model: FullPokemonModel
         try {
-            val response = api.getPokemons(limit)
-            val model : List<PokemonModel> = response.map { response ->
+            val response = api.getPokemonById(id)
 
-                val urlParts = response.url.split('/')
-                val id = urlParts[urlParts.size - 2].toInt()
-                val picture = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png"
-
-                //val bitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream())
-                //val bitmap = loadImageBitmap(picture)
-
-
-
-                //val palette = bitmap?.let { Palette.from(it).generate() }
-                //val darkVibrantSwatch = palette?.dominantSwatch
-
-                PokemonModel(
-                    id = id,
-                    name = response.name,
-                    //color = darkVibrantSwatch?.let { Color(it.rgb) } ?: Color.Transparent
-                    color = null
-                )
-            }
-
-            // Create a new PokemonModel with id = 0
-            val modelHeader = PokemonModel(
-                id = 0,
-                name = "Pokemon",
+            model = FullPokemonModel(
+                abilities = response.abilities,
+                baseExperience = response.baseExperience,
+                forms = response.forms,
+                gameIndices =  response.gameIndices,
+                height = response.height,
+                heldItems = response.heldItems,
+                id = response.id,
+                isDefault = response.isDefault,
+                locationAreaEncounters = response.locationAreaEncounters,
+                moves = response.moves,
+                name = response.name,
+                order = response.order,
+                pastAbilities = response.pastAbilities,
+                pastTypes = response.pastTypes,
+                species = response.species,
+                sprites = response.sprites,
+                stats = response.stats,
+                types = response.types,
+                weight = response.weight,
                 color = null
             )
-
-            //models = listOf(modelHeader) + model
         }
         catch (e: Exception){
             Log.e("PokemonRepository", e.toString())
         }
-        //return models
-    }*/
+        return model
+    }
 
     /*suspend fun getPokemons() : Int{
         return api.getPokemons()

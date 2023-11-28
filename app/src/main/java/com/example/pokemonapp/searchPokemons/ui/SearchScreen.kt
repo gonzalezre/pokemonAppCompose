@@ -55,15 +55,8 @@ fun SearchScreen(searchViewModel: PokemonsViewModel, navigationController: NavHo
         }
     }
 
-    if (isLoading) {
-        Box(
-            Modifier
-                .fillMaxSize()
-        ) {
-            CircularProgressIndicator(Modifier.align(Alignment.Center))
-        }
-    }
-    else if (isErrorConnection){
+
+    if (isErrorConnection){
         NetworkErrorComposable { searchViewModel.onGettingSearchPokemons() }
     }
     else {
@@ -80,6 +73,7 @@ fun SearchScreen(searchViewModel: PokemonsViewModel, navigationController: NavHo
 
                     searchViewModel.onSearchQueryChanged(searchText)
                 },
+                enabled = !isLoading,
                 placeholder = { Text(text = "Search by pokemon name or ID", fontSize = 16.sp) },
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -100,46 +94,53 @@ fun SearchScreen(searchViewModel: PokemonsViewModel, navigationController: NavHo
                 textStyle = TextStyle.Default.copy(fontSize = 16.sp)
             )
 
+            if (isLoading) {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                ) {
+                    CircularProgressIndicator(Modifier.align(Alignment.Center))
+                }
+            }
+            else{
+                Spacer(modifier = Modifier.size(16.dp))
+                LazyVerticalGrid(
+                    state = lazyListState,
+                    columns = GridCells.Adaptive(150.dp),
+                    content = {
+                        itemsIndexed(items = pokemonsList,
+                            key = { _: Int, item: PokemonModel ->
+                                item.id
+                            },
+                            span = { _: Int, item: PokemonModel ->
+
+                                if (item.id == 0) {
+                                    GridItemSpan(2)
+                                } else {
+                                    GridItemSpan(1)
+                                }
 
 
-            Spacer(modifier = Modifier.size(16.dp))
+                            }
+                        )
+                        { index, pokemon ->
 
-            LazyVerticalGrid(
-                state = lazyListState,
-                columns = GridCells.Adaptive(150.dp),
-                content = {
-                    itemsIndexed(items = pokemonsList,
-                        key = { _: Int, item: PokemonModel ->
-                            item.id
-                        },
-                        span = { _: Int, item: PokemonModel ->
-
-                            if (item.id == 0) {
-                                GridItemSpan(2)
+                            if (pokemon.id == 0) {
+                                header(searchText)
                             } else {
-                                GridItemSpan(1)
+                                PokemonItem(pokemon = pokemon, navigationController, searchViewModel)
                             }
 
-
-                        }
-                    )
-                    { index, pokemon ->
-
-                        if (pokemon.id == 0) {
-                            header(searchText)
-                        } else {
-                            PokemonItem(pokemon = pokemon, navigationController, searchViewModel)
-                        }
-
-                        // Load more data when reaching the last item
+                            // Load more data when reaching the last item
 //                    if (index == pokemonsList.size - 1) {
 //                        // Load more data here, e.g., call a function to fetch the next page
 //                        pokemonsViewModel.onGettingPokemons()
 //                    }
 
+                        }
                     }
-                }
-            )
+                )
+            }
 
         }
     }

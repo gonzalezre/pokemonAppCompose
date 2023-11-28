@@ -6,6 +6,7 @@ import androidx.compose.ui.unit.dp
 
 val BottomCardShape = Shapes(
     large = RoundedCornerShape(
-        topStart = 80.dp
+        topStart = 40.dp,
+        topEnd = 40.dp
     )
 )

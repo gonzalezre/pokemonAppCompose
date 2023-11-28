@@ -1,6 +1,7 @@
 package com.example.pokemonapp.core.network
 
-import androidx.lifecycle.LiveData
+import com.example.pokemonapp.core.network.response.FullPokemonResponse
+import com.example.pokemonapp.core.network.response.PokemonsListResponse
 import com.example.pokemonapp.core.network.response.PokemonsResponse
 import com.example.pokemonapp.listPokemons.data.network.PokemonClient
 import kotlinx.coroutines.Dispatchers
@@ -17,12 +18,12 @@ class PokemonService @Inject constructor(private val pokemonClient: PokemonClien
         }
     }
 
-//    suspend fun getPokemonById(id: Int) : List<PokemonsResponse>{
-//        return withContext(Dispatchers.IO){
-//            val response = pokemonClient.getPokemons(limit = limit)
-//            response.body()!!.results
-//        }
-//    }
+    suspend fun getPokemonById(id: Int) : FullPokemonResponse{
+        return withContext(Dispatchers.IO){
+            val response = pokemonClient.getPokemonById(id = id)
+            response.body()!!
+        }
+    }
 
     /*suspend fun getPokemons() : NetworkResult<List<PokemonsResponse>>{
         return try {
