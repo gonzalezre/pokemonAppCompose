@@ -4,6 +4,7 @@ package com.example.pokemonapp.listPokemons.ui
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -40,7 +41,7 @@ class PokemonsViewModel @Inject constructor(@ApplicationContext context: Context
     private val _isErrorConnection = MutableLiveData<Boolean>()
     val isErrorConnection : LiveData<Boolean> = _isErrorConnection
 
-    private val _limit = MutableLiveData<Int>(20)
+    private val _limit = MutableLiveData<Int>(40)
     val limit : LiveData<Int> = _limit
 
     //search
@@ -56,7 +57,7 @@ class PokemonsViewModel @Inject constructor(@ApplicationContext context: Context
         observeSearchQuery(context)
     }
 
-    fun onGettingPokemons(context: Context){
+    fun onGettingPokemons(){
         viewModelScope.launch {
             try {
                 _isLoading.value = true
@@ -66,24 +67,14 @@ class PokemonsViewModel @Inject constructor(@ApplicationContext context: Context
                 if (result != null){
                     //load results
 
-                    val updatedResult = result.map { it->
-                      val bitmap =  convertImageUrlToBitmap("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${it.id}.png", context)
-                      val palette = bitmap?.let { Palette.from(it).generate() }
-                      val darkVibrantSwatch = palette?.dominantSwatch
-                      it.copy(color = darkVibrantSwatch?.let { Color(it.rgb) } ?: Color.Transparent)
-                    }
+                    _pokemons.value = result
 
-                    //_pokemons.value = result
-                    _pokemons.value = updatedResult
-                    //_pokemons.value = (_pokemons.value ?: emptyList()) + result
-                   // _pokemons.value = _pokemons.value?.plus(result)
-
-                    Log.i("_pokemons", _pokemons.toString())
+                    //Log.i("_pokemons", _pokemons.toString())
                 }
                 _isLoading.value = false
                 _isErrorConnection.value = false
 
-                _limit.value = limit.value!! + 20
+                _limit.value = limit.value!! + 40
 
             }
             catch (e: Exception){
@@ -167,4 +158,14 @@ class PokemonsViewModel @Inject constructor(@ApplicationContext context: Context
         }
     }
 
+
+    fun calcDominantColor(drawable : Drawable, onFinish : (Color) -> Unit) {
+        val bmp = (drawable as BitmapDrawable).bitmap.copy(Bitmap.Config.ARGB_8888, true)
+
+        Palette.from(bmp).generate { palette ->
+            palette?.dominantSwatch?.rgb?.let { colorValue ->
+                onFinish(Color(colorValue))
+            }
+        }
+    }
 }

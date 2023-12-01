@@ -20,7 +20,6 @@ class PokemonRepository @Inject constructor(private val api : PokemonService) {
 
                 val urlParts = response.url.split('/')
                 val id = urlParts[urlParts.size - 2].toInt()
-                val picture = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png"
 
                 //val bitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream())
                 //val bitmap = loadImageBitmap(picture)
@@ -34,7 +33,7 @@ class PokemonRepository @Inject constructor(private val api : PokemonService) {
                     id = id,
                     name = response.name,
                     //color = darkVibrantSwatch?.let { Color(it.rgb) } ?: Color.Transparent
-                    color = null
+                    color = null,
                 )
             }
 
@@ -42,7 +41,7 @@ class PokemonRepository @Inject constructor(private val api : PokemonService) {
             val modelHeader = PokemonModel(
                 id = 0,
                 name = "Pokemon",
-                color = null
+                color = null,
             )
 
              models = listOf(modelHeader) + model

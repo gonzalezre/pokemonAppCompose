@@ -1,5 +1,6 @@
 package com.example.pokemonapp.listPokemons.ui
 
+import android.graphics.drawable.BitmapDrawable
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -30,26 +32,43 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.core.graphics.drawable.toBitmap
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavHostController
+import coil.Coil
+import coil.ImageLoader
 import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter
+import coil.compose.ImagePainter
+import coil.compose.SubcomposeAsyncImage
+import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
+import coil.request.ImageRequest
+import coil.request.SuccessResult
+import coil.transform.CircleCropTransformation
 import com.example.pokemonapp.R
 import com.example.pokemonapp.listPokemons.data.model.PokemonModel
 import com.example.pokemonapp.ui.model.Routes
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 
@@ -62,10 +81,9 @@ fun PokemonsScreen(pokemonsViewModel: PokemonsViewModel, navigationController: N
         val context = LocalContext.current
         LaunchedEffect(Unit) {
             if (pokemonsList.isEmpty()) {
-                pokemonsViewModel.onGettingPokemons(context)
+                pokemonsViewModel.onGettingPokemons()
             }
         }
-
 
         if (isLoading) {
             Box(
@@ -76,7 +94,7 @@ fun PokemonsScreen(pokemonsViewModel: PokemonsViewModel, navigationController: N
             }
         }
         else if (isErrorConnection){
-            NetworkErrorComposable { pokemonsViewModel.onGettingPokemons(context) }
+            NetworkErrorComposable { pokemonsViewModel.onGettingPokemons() }
         }
         else {
             Box(modifier = Modifier.fillMaxSize()) {
@@ -121,13 +139,13 @@ fun PokemonsScreen(pokemonsViewModel: PokemonsViewModel, navigationController: N
                                 if (pokemon.id == 0) {
                                     header("Pokedex")
                                 } else {
-                                    PokemonItem(pokemon = pokemon,  navigationController, pokemonsViewModel)
+                                    PokemonItem(pokemon = pokemon,  navigationController)
                                 }
 
                                 // Load more data when reaching the last item
                                 if (index == pokemonsList.size - 1) {
                                     // Load more data here, e.g., call a function to fetch the next page
-                                    pokemonsViewModel.onGettingPokemons(context)
+                                    pokemonsViewModel.onGettingPokemons()
                                 }
 
                             }
@@ -152,46 +170,62 @@ fun header(title: String) {
 }
 
 @Composable
-fun PokemonItem(pokemon : PokemonModel, navigationController : NavHostController, pokemonViewModel : PokemonsViewModel) {
+fun PokemonItem(pokemon : PokemonModel, navigationController : NavHostController, pokemonViewModel : PokemonsViewModel = hiltViewModel()) {
+    val defaultDominantColor = Color.White
+    var dominantColor by remember { mutableStateOf(defaultDominantColor)}
 
     Box(modifier =
     Modifier
         .fillMaxSize()
         .padding(4.dp)
         ) {
-            Card(
+        Card(
+            modifier = Modifier
+                .fillMaxSize()
+                .width(200.dp)
+                .height(200.dp)
+                .padding(8.dp, 8.dp)
+                .clickable {
+                    pokemonViewModel.onSelectingPokemon(pokemon)
+                    navigationController.navigate(Routes.DetailScreen.createRoute(pokemon.id))
+                },
+            elevation = CardDefaults.cardElevation(12.dp),
+            shape = MaterialTheme.shapes.small
+
+        ) {
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .width(200.dp)
-                    .height(200.dp)
-                    .padding(8.dp, 8.dp)
-                    .clickable {
-                        pokemonViewModel.onSelectingPokemon(pokemon)
-                        navigationController.navigate(Routes.DetailScreen.createRoute(pokemon.id))
-                               },
-                elevation = CardDefaults.cardElevation(12.dp),
-                shape = MaterialTheme.shapes.small
+                    .padding(0.dp)
+                    .background(color = dominantColor ?: Color.Black),
 
             ) {
-                Column (
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(0.dp)
-                        .background(color = pokemon.color ?: Color.Black ),
-                    //modifier = Modifier.fillMaxSize().padding(0.dp).background(color = Color.Black),
-
-                ){
-                    val capitalizedText = pokemon.name.replaceFirstChar {
-                        if (it.isLowerCase()) it.titlecase(
-                            Locale.ROOT
-                        ) else it.toString()
-                    }
-                    Text(text = "#${pokemon.id.toString()}", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray, modifier = Modifier.padding(top = 4.dp, start = 4.dp))
-                    Text(text = capitalizedText, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray, modifier = Modifier.padding(start = 4.dp))
+                val capitalizedText = pokemon.name.replaceFirstChar {
+                    if (it.isLowerCase()) it.titlecase(
+                        Locale.ROOT
+                    ) else it.toString()
                 }
+                Text(
+                    text = "#${pokemon.id.toString()}",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.DarkGray,
+                    modifier = Modifier.padding(top = 4.dp, start = 4.dp)
+                )
+                Text(
+                    text = capitalizedText,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.DarkGray,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
             }
-            AsyncImage(
-                model = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png" ,
+        }
+        /*AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png")
+                    .crossfade(true)
+                    .build(),
                 contentDescription = pokemon.name ,
                 modifier = Modifier
                     .fillMaxSize(0.9f)
@@ -199,10 +233,35 @@ fun PokemonItem(pokemon : PokemonModel, navigationController : NavHostController
                     .padding(4.dp),
                 contentScale = ContentScale.Crop,
                 onSuccess = { success ->
-                    //drawable = success.result.drawable
+                    pokemonViewModel.calcDominantColor(success.result.drawable) { color ->
+                        dominantColor = color
+                    }
+                },
+
+            )*/
+        SubcomposeAsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png")
+                .crossfade(true)
+                .build(),
+            loading = {
+                CircularProgressIndicator()
+            },
+            contentDescription = pokemon.name,
+            modifier = Modifier
+                .fillMaxSize(0.9f)
+                .offset(x = 35.dp, y = 35.dp)
+                .padding(4.dp),
+            contentScale = ContentScale.Crop,
+            onSuccess = { success ->
+                pokemonViewModel.calcDominantColor(success.result.drawable) { color ->
+                    dominantColor = color
                 }
-            )
-        }
+            }
+
+        )
+
+    }
 }
 
 

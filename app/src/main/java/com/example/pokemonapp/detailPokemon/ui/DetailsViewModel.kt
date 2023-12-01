@@ -3,6 +3,7 @@ package com.example.pokemonapp.detailPokemon.ui
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.LiveData
@@ -33,16 +34,16 @@ class DetailsViewModel @Inject constructor(@ApplicationContext context: Context,
     private val _isErrorConnection = MutableLiveData<Boolean>()
     val isErrorConnection : LiveData<Boolean> = _isErrorConnection
 
-    fun onGettingPokemonByInfo(id: Int?, context: Context) {
+    fun onGettingPokemonByInfo(id: Int?) {
         viewModelScope.launch {
             try {
                 _isLoading.value = true
                 val result = getPokemonByIdUseCase(id!!)
 
-                val bitmap =  convertImageUrlToBitmap("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png", context)
-                val palette = bitmap?.let { Palette.from(it).generate() }
-                val darkVibrantSwatch = palette?.dominantSwatch
-                result.color =  darkVibrantSwatch?.let { Color(it.rgb) } ?: Color.Transparent
+                //val bitmap =  convertImageUrlToBitmap("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png", context)
+                //val palette = bitmap?.let { Palette.from(it).generate() }
+                //val darkVibrantSwatch = palette?.dominantSwatch
+                //result.color =  darkVibrantSwatch?.let { Color(it.rgb) } ?: Color.Transparent
 
                 _pokemon.value = result
                 _isLoading.value = false
@@ -68,6 +69,16 @@ class DetailsViewModel @Inject constructor(@ApplicationContext context: Context,
         }
         else{
             null
+        }
+    }
+
+    fun calcDominantColor(drawable : Drawable, onFinish : (Color) -> Unit) {
+        val bmp = (drawable as BitmapDrawable).bitmap.copy(Bitmap.Config.ARGB_8888, true)
+
+        Palette.from(bmp).generate { palette ->
+            palette?.dominantSwatch?.rgb?.let { colorValue ->
+                onFinish(Color(colorValue))
+            }
         }
     }
 }

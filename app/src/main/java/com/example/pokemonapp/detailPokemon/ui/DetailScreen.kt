@@ -1,6 +1,7 @@
 package com.example.pokemonapp.detailPokemon.ui
 
 import android.widget.ScrollView
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
@@ -30,6 +31,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,8 +48,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.pokemonapp.R
 import com.example.pokemonapp.detailPokemon.data.model.AbilityModel
 import com.example.pokemonapp.detailPokemon.data.model.FullPokemonModel
@@ -89,15 +95,18 @@ fun DetailScreen( detailsViewModel: DetailsViewModel, navigationController: NavH
     val isLoading: Boolean by detailsViewModel.isLoading.observeAsState(initial = false)
     val isErrorConnection: Boolean by detailsViewModel.isErrorConnection.observeAsState(initial = false)
     val svgPainter: Painter = painterResource(id = R.drawable.wave)
-    val context = LocalContext.current
+
+    val defaultDominantColor = Color.White
+    var dominantColor by remember { mutableStateOf(defaultDominantColor) }
+
     LaunchedEffect(Unit) {
-        detailsViewModel.onGettingPokemonByInfo(id, context)
+        detailsViewModel.onGettingPokemonByInfo(id)
     }
 
     // Use the SystemUiController to set the status bar color
     val systemUiController = rememberSystemUiController()
-    DisposableEffect(selectedPokemon.color) {
-        systemUiController.setStatusBarColor(selectedPokemon.color!!)
+    DisposableEffect(dominantColor) {
+        systemUiController.setStatusBarColor(dominantColor)
         onDispose {
             // Reset status bar color on dispose
             systemUiController.setStatusBarColor(Color.White)
@@ -113,18 +122,19 @@ fun DetailScreen( detailsViewModel: DetailsViewModel, navigationController: NavH
         }
     }
     else if (isErrorConnection){
-        NetworkErrorComposable { detailsViewModel.onGettingPokemonByInfo(id, context) }
+        NetworkErrorComposable { detailsViewModel.onGettingPokemonByInfo(id) }
     }
     else {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(selectedPokemon.color!!)
+                .background(dominantColor)
         ) {
             Column(
                 modifier = Modifier
                     .padding(8.dp)
                     .zIndex(999f)
+                    .animateContentSize { initialValue, targetValue ->  }
             ) {
                 Text(
                     text = "#${selectedPokemon.id} ${selectedPokemon.name}",
@@ -138,14 +148,31 @@ fun DetailScreen( detailsViewModel: DetailsViewModel, navigationController: NavH
                         .fillMaxHeight(0.6f),
                     contentAlignment = Alignment.BottomCenter
                 ) {
+//                    AsyncImage(
+//                        model = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${selectedPokemon.id}.png",
+//                        contentDescription = "$id",
+//                        modifier = Modifier
+//                            .fillMaxSize()
+//                            .padding(4.dp),
+//                        contentScale = ContentScale.Fit,
+//                    )
                     AsyncImage(
-                        model = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${selectedPokemon.id}.png",
-                        contentDescription = "$id",
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png")
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = selectedPokemon.name ,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(4.dp),
                         contentScale = ContentScale.Fit,
-                    )
+                        onSuccess = { success ->
+                            detailsViewModel.calcDominantColor(success.result.drawable) { color ->
+                                dominantColor = color
+                            }
+                        },
+
+                        )
                 }
             }
 
@@ -156,7 +183,7 @@ fun DetailScreen( detailsViewModel: DetailsViewModel, navigationController: NavH
                         .fillMaxWidth()
                         .height(400.dp)
                         .verticalScroll(rememberScrollState()),
-                    elevation = 0.dp,
+                    elevation = 8.dp,
                     shape = BottomCardShape.large,
 
                 ) {
