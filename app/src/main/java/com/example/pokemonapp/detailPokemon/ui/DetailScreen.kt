@@ -2,6 +2,7 @@ package com.example.pokemonapp.detailPokemon.ui
 
 import android.widget.ScrollView
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
@@ -29,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -98,19 +102,15 @@ fun DetailScreen( detailsViewModel: DetailsViewModel, navigationController: NavH
 
     val defaultDominantColor = Color.White
     var dominantColor by remember { mutableStateOf(defaultDominantColor) }
+    val scrollState = rememberScrollState()
+    val endReached by remember {
+        derivedStateOf {
+            scrollState.value == scrollState.maxValue
+        }
+    }
 
     LaunchedEffect(Unit) {
         detailsViewModel.onGettingPokemonByInfo(id)
-    }
-
-    // Use the SystemUiController to set the status bar color
-    val systemUiController = rememberSystemUiController()
-    DisposableEffect(dominantColor) {
-        systemUiController.setStatusBarColor(dominantColor)
-        onDispose {
-            // Reset status bar color on dispose
-            systemUiController.setStatusBarColor(Color.White)
-        }
     }
 
     if (isLoading) {
@@ -125,29 +125,44 @@ fun DetailScreen( detailsViewModel: DetailsViewModel, navigationController: NavH
         NetworkErrorComposable { detailsViewModel.onGettingPokemonByInfo(id) }
     }
     else {
+        // Use the SystemUiController to set the status bar color
+        val systemUiController = rememberSystemUiController()
+        DisposableEffect(dominantColor) {
+            systemUiController.setStatusBarColor(dominantColor)
+            onDispose {
+                // Reset status bar color on dispose
+                systemUiController.setStatusBarColor(Color.White)
+            }
+        }
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(dominantColor)
+                .verticalScroll(scrollState)
         ) {
-            Column(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .zIndex(999f)
-                    .animateContentSize { initialValue, targetValue ->  }
-            ) {
-                Text(
-                    text = "#${selectedPokemon.id} ${selectedPokemon.name}",
-                    color = Color.White,
-                    fontSize = 36.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Box(
+            Column(modifier = Modifier.fillMaxSize()) {
+//                top section
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(0.6f),
-                    contentAlignment = Alignment.BottomCenter
+                        .padding(8.dp)
+                        .zIndex(999f)
+                        .animateContentSize(animationSpec = tween(durationMillis = 600))
+                        .height(height = if (endReached) 300.dp else 600.dp) //600dp
                 ) {
+                    Text(
+                        text = "#${selectedPokemon.id} ${selectedPokemon.name}",
+                        color = Color.White,
+                        fontSize = 36.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .animateContentSize(animationSpec = tween(durationMillis = 900)),
+                        contentAlignment = Alignment.BottomCenter,
+
+                    ) {
 //                    AsyncImage(
 //                        model = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${selectedPokemon.id}.png",
 //                        contentDescription = "$id",
@@ -156,120 +171,129 @@ fun DetailScreen( detailsViewModel: DetailsViewModel, navigationController: NavH
 //                            .padding(4.dp),
 //                        contentScale = ContentScale.Fit,
 //                    )
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png")
-                            .crossfade(true)
-                            .build(),
-                        contentDescription = selectedPokemon.name ,
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png")
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = selectedPokemon.name ,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .align(Alignment.BottomCenter),
+                            contentScale = (if (endReached) ContentScale.Fit else ContentScale.Crop),
+                            //contentScale = ContentScale.Crop,
+                            onSuccess = { success ->
+                                detailsViewModel.calcDominantColor(success.result.drawable) { color ->
+                                    dominantColor = color
+                                }
+                            },
+
+                            )
+                    }
+                }
+
+//                info section
+                Box(modifier = Modifier
+                    .animateContentSize(animationSpec = tween(durationMillis = 600))
+                    .height(height = if (endReached) 550.dp else 550.dp) //550.dp
+                )
+                {
+                    androidx.compose.material.Card(
+                        backgroundColor = Color.White,
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(4.dp),
-                        contentScale = ContentScale.Fit,
-                        onSuccess = { success ->
-                            detailsViewModel.calcDominantColor(success.result.drawable) { color ->
-                                dominantColor = color
-                            }
-                        },
+                        //.verticalScroll(rememberScrollState())
+                        ,
+                        elevation = 8.dp,
+                        shape = BottomCardShape.large,
 
-                        )
-                }
-            }
-
-            Box(modifier = Modifier.align(Alignment.BottomCenter)) {
-                androidx.compose.material.Card(
-                    backgroundColor = Color.White,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(400.dp)
-                        .verticalScroll(rememberScrollState()),
-                    elevation = 8.dp,
-                    shape = BottomCardShape.large,
-
-                ) {
-                    Box(
-                        modifier = Modifier.padding(top = 20.dp, bottom = 60.dp, start = 8.dp, end = 8.dp)
-                    ) {
-                        Column {
-                            Text(text = "Types", fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp))
-                            LazyRow {
-                                items(selectedPokemon.types) { type ->
-                                    ItemType(type)
+                        ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(top = 20.dp, bottom = 10.dp, start = 8.dp, end = 8.dp)
+                        ) {
+                            Column (modifier = Modifier.fillMaxSize()){
+                                Text(text = "Types", fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp))
+                                LazyRow {
+                                    items(selectedPokemon.types) { type ->
+                                        ItemType(type)
+                                    }
                                 }
-                            }
-                            Text(text = "Sprites" , fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp))
-                            LazyRow(modifier = Modifier){
-                                item {
+                                Text(text = "Sprites" , fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp))
+                                LazyRow(modifier = Modifier){
+                                    item {
+                                        AsyncImage(
+                                            model = selectedPokemon.sprites.frontDefault,
+                                            contentDescription = "frontDefault",
+                                            modifier = Modifier
+                                                .height(100.dp)
+                                                .width(100.dp),
+                                            //contentScale = ContentScale.Fit
+                                        )
+                                    }
+                                    item {
+                                        AsyncImage(
+                                            model = selectedPokemon.sprites.backDefault,
+                                            contentDescription = "backDefault",
+                                            modifier = Modifier
+                                                .height(100.dp)
+                                                .width(100.dp),
+                                        )
+                                    }
+                                    item {
+                                        AsyncImage(
+                                            model = selectedPokemon.sprites.frontShiny,
+                                            contentDescription = "frontShiny",
+                                            modifier = Modifier
+                                                .height(100.dp)
+                                                .width(100.dp),
+                                        )
+                                    }
+                                    item {
+                                        AsyncImage(
+                                            model = selectedPokemon.sprites.backShiny,
+                                            contentDescription = "backShiny",
+                                            modifier = Modifier
+                                                .height(100.dp)
+                                                .width(100.dp),
+                                        )
+                                    }
+                                }
+                                Text(text = "Base skills", fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp))
+                                LazyRow {
+                                    items(selectedPokemon.abilities) { ability ->
+                                        AbilitiesItem(ability)
+                                    }
+                                }
+                                Text(text = "Base moves", fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp))
+                                LazyRow {
+                                    items(selectedPokemon.moves) { move ->
+                                        MovesItem(move)
+                                    }
+                                }
+                                Text(text = "Stats", fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp))
+                                LazyRow {
+                                    items(selectedPokemon.stats) { stat ->
+                                        StatItem(stat)
+                                    }
+                                }
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
                                     AsyncImage(
                                         model = selectedPokemon.sprites.frontDefault,
                                         contentDescription = "frontDefault",
                                         modifier = Modifier
                                             .height(100.dp)
-                                            .width(100.dp),
-                                        //contentScale = ContentScale.Fit
+                                            .width(100.dp)
+                                        ,
                                     )
                                 }
-                                item {
-                                    AsyncImage(
-                                        model = selectedPokemon.sprites.backDefault,
-                                        contentDescription = "backDefault",
-                                        modifier = Modifier
-                                            .height(100.dp)
-                                            .width(100.dp),
-                                    )
-                                }
-                                item {
-                                    AsyncImage(
-                                        model = selectedPokemon.sprites.frontShiny,
-                                        contentDescription = "frontShiny",
-                                        modifier = Modifier
-                                            .height(100.dp)
-                                            .width(100.dp),
-                                    )
-                                }
-                                item {
-                                    AsyncImage(
-                                        model = selectedPokemon.sprites.backShiny,
-                                        contentDescription = "backShiny",
-                                        modifier = Modifier
-                                            .height(100.dp)
-                                            .width(100.dp),
-                                    )
-                                }
-                            }
-                            Text(text = "Base skills", fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp))
-                            LazyRow {
-                                items(selectedPokemon.abilities) { ability ->
-                                    AbilitiesItem(ability)
-                                }
-                            }
-                            Text(text = "Base moves", fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp))
-                            LazyRow {
-                                items(selectedPokemon.moves) { move ->
-                                    MovesItem(move)
-                                }
-                            }
-                            Text(text = "Stats", fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp))
-                            LazyRow {
-                                items(selectedPokemon.stats) { stat ->
-                                    StatItem(stat)
-                                }
-                            }
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                AsyncImage(
-                                    model = selectedPokemon.sprites.frontDefault,
-                                    contentDescription = "frontDefault",
-                                    modifier = Modifier
-                                        .height(100.dp)
-                                        .width(100.dp)
-                                    ,
-                                )
-                            }
 
 
+                            }
                         }
                     }
                 }

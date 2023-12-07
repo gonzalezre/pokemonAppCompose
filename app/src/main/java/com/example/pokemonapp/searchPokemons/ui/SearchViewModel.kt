@@ -3,6 +3,7 @@ package com.example.pokemonapp.searchPokemons.ui
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.util.Log
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
@@ -92,7 +93,7 @@ class SearchViewModel @Inject constructor(@ApplicationContext context: Context, 
     }
     private fun observeSearchQuery(context: Context) {
         viewModelScope.launch {
-                searchQuery.debounce(2000)
+                searchQuery.debounce(1000)
                     .collect { query ->
                         // Perform the search logic here
                         // Update filteredPokemons accordingly
@@ -102,16 +103,16 @@ class SearchViewModel @Inject constructor(@ApplicationContext context: Context, 
                                 it.name.contains(query, ignoreCase = true)
                             }
 
-                            val updatedResult = filteredPokemons.map { it->
-                                val bitmap =  convertImageUrlToBitmap("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${it.id}.png", context)
-                                val palette = bitmap?.let { Palette.from(it).generate() }
-                                val darkVibrantSwatch = palette?.dominantSwatch
-                                it.copy(color = darkVibrantSwatch?.let { Color(it.rgb) } ?: Color.Transparent)
-                            }
+                            //val updatedResult = filteredPokemons.map { it->
+                            //    val bitmap =  convertImageUrlToBitmap("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${it.id}.png", context)
+                            //    val palette = bitmap?.let { Palette.from(it).generate() }
+                            //    val darkVibrantSwatch = palette?.dominantSwatch
+                            //    it.copy(color = darkVibrantSwatch?.let { Color(it.rgb) } ?: Color.Transparent)
+                            //}
 
 
-                            //_filteredPokemons.value = filteredPokemons
-                            _filteredPokemons.value = updatedResult
+                            _filteredPokemons.value = filteredPokemons
+                            //_filteredPokemons.value = updatedResult
                             _isLoading.value = false
                         }
 
@@ -133,6 +134,16 @@ class SearchViewModel @Inject constructor(@ApplicationContext context: Context, 
         }
         else{
             null
+        }
+    }
+
+    fun calcDominantColor(drawable : Drawable, onFinish : (Color) -> Unit) {
+        val bmp = (drawable as BitmapDrawable).bitmap.copy(Bitmap.Config.ARGB_8888, true)
+
+        Palette.from(bmp).generate { palette ->
+            palette?.dominantSwatch?.rgb?.let { colorValue ->
+                onFinish(Color(colorValue))
+            }
         }
     }
 }
