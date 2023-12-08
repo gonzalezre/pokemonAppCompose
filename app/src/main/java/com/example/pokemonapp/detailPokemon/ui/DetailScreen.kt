@@ -2,6 +2,10 @@ package com.example.pokemonapp.detailPokemon.ui
 
 import android.widget.ScrollView
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.EaseIn
+import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -135,20 +139,25 @@ fun DetailScreen( detailsViewModel: DetailsViewModel, navigationController: NavH
             }
         }
 
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(dominantColor)
                 .verticalScroll(scrollState)
         ) {
-            Column(modifier = Modifier.fillMaxSize()) {
 //                top section
                 Column(
                     modifier = Modifier
                         .padding(8.dp)
                         .zIndex(999f)
-                        .animateContentSize(animationSpec = tween(durationMillis = 600))
-                        .height(height = if (endReached) 300.dp else 600.dp) //600dp
+                        //.height(height = if (endReached) 300.dp else 600.dp) //600dp
+                        .height(600.dp)
+                        .graphicsLayer{
+                            //alpha = 1f - (scrollState.value.toFloat()/scrollState.maxValue)
+                            translationY = 0.5f * scrollState.value
+                        }
+                        //.animateContentSize(animationSpec = tween(durationMillis = 1000, easing = EaseIn))
+
                 ) {
                     Text(
                         text = "#${selectedPokemon.id} ${selectedPokemon.name}",
@@ -159,7 +168,7 @@ fun DetailScreen( detailsViewModel: DetailsViewModel, navigationController: NavH
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .animateContentSize(animationSpec = tween(durationMillis = 900)),
+                            .animateContentSize(animationSpec = tween(durationMillis = 1000, easing = EaseIn)),
                         contentAlignment = Alignment.BottomCenter,
 
                     ) {
@@ -179,8 +188,9 @@ fun DetailScreen( detailsViewModel: DetailsViewModel, navigationController: NavH
                             contentDescription = selectedPokemon.name ,
                             modifier = Modifier
                                 .fillMaxSize()
-                                .align(Alignment.BottomCenter),
-                            contentScale = (if (endReached) ContentScale.Fit else ContentScale.Crop),
+                                .align(Alignment.BottomCenter)
+                                .animateContentSize(animationSpec = tween(durationMillis = 1000, easing = EaseOut)),
+                            //contentScale = (if (endReached) ContentScale.Fit else ContentScale.Crop),
                             //contentScale = ContentScale.Crop,
                             onSuccess = { success ->
                                 detailsViewModel.calcDominantColor(success.result.drawable) { color ->
@@ -196,8 +206,7 @@ fun DetailScreen( detailsViewModel: DetailsViewModel, navigationController: NavH
                 Box(modifier = Modifier
                     .animateContentSize(animationSpec = tween(durationMillis = 600))
                     .height(height = if (endReached) 550.dp else 550.dp) //550.dp
-                )
-                {
+                ) {
                     androidx.compose.material.Card(
                         backgroundColor = Color.White,
                         modifier = Modifier
@@ -297,7 +306,7 @@ fun DetailScreen( detailsViewModel: DetailsViewModel, navigationController: NavH
                         }
                     }
                 }
-            }
+
 
         }
     }
