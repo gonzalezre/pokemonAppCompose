@@ -60,7 +60,7 @@ fun PokemonAppTheme(
             //window.statusBarColor = colorScheme.primary.toArgb()
             //WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
 
-            window.statusBarColor = White.toArgb()
+            window.statusBarColor = TopBarColor.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
         }
     }

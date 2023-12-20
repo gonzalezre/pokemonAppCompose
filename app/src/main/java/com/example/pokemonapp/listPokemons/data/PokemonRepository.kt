@@ -38,13 +38,14 @@ class PokemonRepository @Inject constructor(private val api : PokemonService) {
             }
 
             // Create a new PokemonModel with id = 0
-            val modelHeader = PokemonModel(
-                id = 0,
-                name = "Pokemon",
-                color = null,
-            )
+//            val modelHeader = PokemonModel(
+//                id = 0,
+//                name = "Pokemon",
+//                color = null,
+//            )
 
-             models = listOf(modelHeader) + model
+             //models = listOf(modelHeader) + model
+            models = model
         }
         catch (e: Exception){
             Log.e("PokemonRepository", e.toString())

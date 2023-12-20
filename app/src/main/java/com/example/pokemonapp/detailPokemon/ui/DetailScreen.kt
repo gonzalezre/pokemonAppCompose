@@ -45,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
@@ -73,6 +74,12 @@ import com.example.pokemonapp.listPokemons.data.model.PokemonModel
 import com.example.pokemonapp.listPokemons.ui.NetworkErrorComposable
 import com.example.pokemonapp.listPokemons.ui.PokemonsViewModel
 import com.example.pokemonapp.ui.theme.BottomCardShape
+import com.example.pokemonapp.ui.theme.BottomNav
+import com.example.pokemonapp.ui.theme.ButtonsBackground
+import com.example.pokemonapp.ui.theme.Creme
+import com.example.pokemonapp.ui.theme.PrimaryBackground
+import com.example.pokemonapp.ui.theme.SecondaryBackground
+import com.example.pokemonapp.ui.theme.TopBarColor
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlin.math.sin
 
@@ -135,14 +142,14 @@ fun DetailScreen( detailsViewModel: DetailsViewModel, navigationController: NavH
             systemUiController.setStatusBarColor(dominantColor)
             onDispose {
                 // Reset status bar color on dispose
-                systemUiController.setStatusBarColor(Color.White)
+                systemUiController.setStatusBarColor(TopBarColor)
             }
         }
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(dominantColor)
+                .background(Brush.verticalGradient(listOf(dominantColor, PrimaryBackground)))
                 .verticalScroll(scrollState)
         ) {
 //                top section
@@ -208,7 +215,7 @@ fun DetailScreen( detailsViewModel: DetailsViewModel, navigationController: NavH
                     .height(height = if (endReached) 550.dp else 550.dp) //550.dp
                 ) {
                     androidx.compose.material.Card(
-                        backgroundColor = Color.White,
+                        backgroundColor = SecondaryBackground,
                         modifier = Modifier
                             .fillMaxSize()
                         //.verticalScroll(rememberScrollState())
@@ -223,13 +230,13 @@ fun DetailScreen( detailsViewModel: DetailsViewModel, navigationController: NavH
                                 .padding(top = 20.dp, bottom = 10.dp, start = 8.dp, end = 8.dp)
                         ) {
                             Column (modifier = Modifier.fillMaxSize()){
-                                Text(text = "Types", fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp))
+                                Text(text = "Types", fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp), color = TopBarColor)
                                 LazyRow {
                                     items(selectedPokemon.types) { type ->
                                         ItemType(type)
                                     }
                                 }
-                                Text(text = "Sprites" , fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp))
+                                Text(text = "Sprites" , fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp), color = TopBarColor)
                                 LazyRow(modifier = Modifier){
                                     item {
                                         AsyncImage(
@@ -269,19 +276,19 @@ fun DetailScreen( detailsViewModel: DetailsViewModel, navigationController: NavH
                                         )
                                     }
                                 }
-                                Text(text = "Base skills", fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp))
+                                Text(text = "Base skills", fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp), color = TopBarColor)
                                 LazyRow {
                                     items(selectedPokemon.abilities) { ability ->
                                         AbilitiesItem(ability)
                                     }
                                 }
-                                Text(text = "Base moves", fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp))
+                                Text(text = "Base moves", fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp), color = TopBarColor)
                                 LazyRow {
                                     items(selectedPokemon.moves) { move ->
                                         MovesItem(move)
                                     }
                                 }
-                                Text(text = "Stats", fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp))
+                                Text(text = "Stats", fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp), color = TopBarColor)
                                 LazyRow {
                                     items(selectedPokemon.stats) { stat ->
                                         StatItem(stat)
@@ -316,20 +323,20 @@ fun DetailScreen( detailsViewModel: DetailsViewModel, navigationController: NavH
 
 @Composable
 fun StatItem(stat: StatModel) {
-    Text(text = stat.stat.name, modifier = Modifier.padding(start = 10.dp))
+    Text(text = stat.stat.name, modifier = Modifier.padding(start = 10.dp), color = Creme)
 }
 
 @Composable
 fun MovesItem(move: MoveModel) {
-    Text(text = move.move.name, modifier = Modifier.padding(start = 10.dp))
+    Text(text = move.move.name, modifier = Modifier.padding(start = 10.dp), color = Creme)
 }
 
 @Composable
 fun AbilitiesItem(abilityModel: AbilityModel) {
-    Text(text = abilityModel.ability.name, modifier = Modifier.padding(start = 10.dp))
+    Text(text = abilityModel.ability.name, modifier = Modifier.padding(start = 10.dp), color = Creme)
 }
 
 @Composable
 fun ItemType(typeModel :TypeModel) {
-    Text(text = typeModel.type.name, modifier = Modifier.padding(start = 10.dp))
+    Text(text = typeModel.type.name, modifier = Modifier.padding(start = 10.dp), color = Creme)
 }

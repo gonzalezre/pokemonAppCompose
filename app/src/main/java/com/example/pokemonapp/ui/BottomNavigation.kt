@@ -1,6 +1,7 @@
 package com.example.pokemonapp.ui
 
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,6 +25,10 @@ import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.pokemonapp.ui.model.Routes
+import com.example.pokemonapp.ui.theme.BottomNav
+import com.example.pokemonapp.ui.theme.ButtonsBackground
+import com.example.pokemonapp.ui.theme.DarkGray
+import com.example.pokemonapp.ui.theme.TopBarColor
 import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 
 @Composable
@@ -31,7 +36,7 @@ fun BottomNavigation(navigationController: NavHostController) {
     var index by remember { mutableStateOf(0)}
 
     androidx.compose.material.BottomNavigation(
-        backgroundColor = Color.White,
+        backgroundColor = TopBarColor,
         modifier = Modifier
             .padding(12.dp)
             //.alpha(0.5f)
@@ -47,9 +52,10 @@ fun BottomNavigation(navigationController: NavHostController) {
             icon = {
             Icon(
                 imageVector = Icons.Default.Home,
-                contentDescription = "Home"
+                contentDescription = "Home",
+                tint = DarkGray
             ) 
-        }, label = { Text(text = "Home")})
+        }, label = { Text(text = "Home", color = DarkGray)})
         BottomNavigationItem(
             selected = index == 1,
             onClick = {
@@ -59,8 +65,9 @@ fun BottomNavigation(navigationController: NavHostController) {
             icon = {
             Icon(
                 imageVector = Icons.Default.Search,
-                contentDescription = "Search"
+                contentDescription = "Search",
+                tint = DarkGray
             )
-        }, label = { Text(text = "Search")})
+        }, label = { Text(text = "Search", color = DarkGray)})
     }
 }
